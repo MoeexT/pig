@@ -4,4 +4,4 @@ Just for learning.
 
 ## cop - custom optimization protocol
 
-You can treat it as a mini TCP
+You can regard it as a mini TCP
