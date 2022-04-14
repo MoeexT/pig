@@ -48,7 +48,7 @@ var (
 	// syn channels
 	// synchs map[SocketId]chan error
 	logger    *log.Logger
-	SOCK_STAT map[uint8]string
+	SOCK_STAT_DESC map[uint8]string
 )
 
 func init() {
@@ -56,7 +56,7 @@ func init() {
 	// fmap = make(map[SocketId]*Socket)
 	// cmap = make(map[SocketId]*Socket)
 	logger = log.Dog
-	SOCK_STAT = map[uint8]string{
+	SOCK_STAT_DESC = map[uint8]string{
 		SYN_SENT:    "SYN_SENT",
 		SYN_RCVD:    "SYN_RCVD",
 		ESTABLISHED: "ESTABLISHED",

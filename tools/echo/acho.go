@@ -94,7 +94,7 @@ func main() {
 			case 'f':
 				dog.Level = log.Fatal
 			case 's':
-				dog.Info(cop.SOCK_STAT[sock.Status])
+				dog.Info(cop.SOCK_STAT_DESC[sock.Status])
 			case 'h':
 				dog.Info(HELP_INFO)
 			case 'q':

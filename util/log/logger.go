@@ -25,7 +25,7 @@ func init() {
 	colorMap = map[int]string{
 		Trace: "\033[90m",   // dark gray
 		Debug: "\033[96m",   // cyan
-		Info:  "\033[92m",   // green
+		Info:  "\033[92m",   // green; think about 32m
 		Warn:  "\033[93m",   // yellow
 		Error: "\033[91m",   // red
 		Fatal: "\033[1;91m", // bold red; 41;1;37m white&bold with red background

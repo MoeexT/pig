@@ -80,7 +80,7 @@ func main() {
 		case ":slf":
 			dog.Level = log.Fatal
 		case ":stat":
-			dog.Info(cop.SOCK_STAT[sock.Status])
+			dog.Info(cop.SOCK_STAT_DESC[sock.Status])
 		case ":help":
 			dog.Info(HELP_INFO)
 		case ":disc":

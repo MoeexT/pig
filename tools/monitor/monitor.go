@@ -32,7 +32,7 @@ func init() {
 	flag.UintVar(&dp, "dp", 0, "dst port")
 	flag.BoolVar(&a, "a", false, "all packets")
 	flag.BoolVar(&v, "v", false, "verbose mode: show headers")
-	flag.StringVar(&protocol, "p", "", "protocol: tcp/icmp")
+	flag.StringVar(&protocol, "p", "tcp", "protocol: tcp/icmp")
 	dog = log.Dog
 }
 
@@ -87,6 +87,7 @@ func catchTcp() {
 			}
 
 			dog.Trace(fmt.Sprintf("%s:%d -> %s:%d", ipHdr.Src.String(), hdr.SrcPort, ipHdr.Dst.String(), hdr.DstPort))
+			dog.Trace(fmt.Sprintf("%#v", ipHdr))
 			dog.Info(util.BytesString(data, 20))
 		}()
 	}
