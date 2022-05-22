@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"pig/lib/cop"
-	"pig/util/log"
+	"pig/util/logger"
 )
 
 /*
@@ -36,7 +36,7 @@ var (
 	v        bool   // verbose
 	protocol string // which protocol
 	input    string
-	dog      *log.Logger
+	dog      *logger.Logger
 )
 
 func init() {
@@ -47,14 +47,14 @@ func init() {
 	flag.BoolVar(&a, "a", false, "all packets")
 	flag.BoolVar(&v, "v", false, "verbose mode: show headers")
 	flag.StringVar(&protocol, "p", "tcp", "protocol: tcp/icmp")
-	dog = log.Dog
+	dog = logger.Dog
 }
 
 func main() {
 	flag.Parse()
 	flag.PrintDefaults()
-	dog = log.Dog
-	dog.Level = log.Info
+	dog = logger.Dog
+	dog.Level = logger.Info
 	dog.Info(HELP_INFO)
 
 	reader := bufio.NewReader(os.Stdin)
@@ -90,17 +90,17 @@ func main() {
 			}
 			continue
 		case ":slt":
-			dog.Level = log.Trace
+			dog.Level = logger.Trace
 		case ":sld":
-			dog.Level = log.Debug
+			dog.Level = logger.Debug
 		case ":sli":
-			dog.Level = log.Info
+			dog.Level = logger.Info
 		case ":slw":
-			dog.Level = log.Warn
+			dog.Level = logger.Warn
 		case ":sle":
-			dog.Level = log.Error
+			dog.Level = logger.Error
 		case ":slf":
-			dog.Level = log.Fatal
+			dog.Level = logger.Fatal
 		case ":stat":
 			dog.Info(cop.SOCK_STAT_DESC[sock.Status])
 		case ":help":

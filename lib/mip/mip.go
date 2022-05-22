@@ -3,11 +3,12 @@ package mip
 import (
 	"errors"
 	"net"
-	"pig/lib/eth"
-	"pig/util/log"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"pig/lib/eth"
+	"pig/util/logger"
 
 	"golang.org/x/net/ipv4"
 )
@@ -19,12 +20,12 @@ var (
 	fd        int
 	addr      *syscall.SockaddrInet4
 	addrCache map[uint64]*syscall.SockaddrInet4
-	dog       *log.Logger
+	dog       *logger.Logger
 )
 
 func init() {
 	fd, _ = syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_RAW)
-	dog = log.Dog
+	dog = logger.Dog
 	addrCache = make(map[uint64]*syscall.SockaddrInet4)
 }
 
@@ -85,7 +86,7 @@ func htons(i uint16) uint16 {
 
 // receive all ipv4 packets from the network then yield data
 func BeginReceive() (ch chan []byte, err error) {
-	fdr, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+	fdr, err := syscall.Socket(syscall.AF_ROUTE, syscall.SOCK_RAW, int(htons(syscall.IFT_ETHER)))
 	dog.Trace("created socket with fd:", fdr)
 	if err != nil {
 		return nil, err

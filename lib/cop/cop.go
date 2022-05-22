@@ -2,7 +2,8 @@ package cop
 
 import (
 	"net"
-	"pig/util/log"
+
+	"pig/util/logger"
 
 	"golang.org/x/net/ipv4"
 )
@@ -14,11 +15,11 @@ type IpPacket struct {
 }
 
 var (
-	dog *log.Logger
+	dog *logger.Logger
 )
 
 func init() {
-	dog = log.Dog
+	dog = logger.Dog
 }
 
 func ConnectTo() {
@@ -49,7 +50,6 @@ func BeginRead() (ch chan []byte, err error) {
 
 	return ch, nil
 }
-
 
 func ReceiveWithNet() (ch chan *IpPacket, err error) {
 	conn, err := net.ListenIP("ip4:tcp", nil)

@@ -2,12 +2,14 @@ package main
 
 import (
 	"math/rand"
-	"pig/util/log"
+
+	"pig/lib/cop"
+	"pig/util/logger"
 )
 
 // do something `testing` unable
 func main() {
-	logger := log.Dog
+	logger := logger.Dog
 
 	logger.Trace("trace", 1, []byte{0})
 	logger.Debug("debug", 2, []byte{0, 1})
@@ -24,7 +26,14 @@ func main() {
 	for i := 0; i < 10; i++ {
 		logger.Info(rand.Uint32())
 	}
-	var data []byte
-	data = nil
+	var data []byte = nil
 	logger.Infof("len %v, %v", len(data), data)
+
+	header := &cop.Header{}
+
+	logger.Trace(header)
+	logger.Debug(header)
+	logger.Info(header)
+	logger.Warn(header)
+	logger.Error(header)
 }

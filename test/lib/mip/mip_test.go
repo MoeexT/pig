@@ -1,8 +1,9 @@
 package mip_test
 
 import (
-	"pig/lib/mip"
 	"testing"
+
+	"pig/lib/mip"
 )
 
 func TestIPAddressParser(t *testing.T) {

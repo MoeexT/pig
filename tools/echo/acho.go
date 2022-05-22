@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"pig/lib/cop"
-	"pig/util/log"
+	"pig/util/logger"
 
 	"golang.org/x/term"
 )
@@ -16,7 +16,7 @@ var (
 	di  string // dst ip
 	sp  uint   // source port, my port
 	dp  uint   // dst port
-	dog *log.Logger
+	dog *logger.Logger
 )
 
 const (
@@ -32,8 +32,8 @@ func init() {
 	flag.StringVar(&di, "di", "", "dst ip")
 	flag.UintVar(&sp, "sp", 0, "source port")
 	flag.UintVar(&dp, "dp", 0, "dst port")
-	dog = log.Dog
-	dog.Level = log.Trace
+	dog = logger.Dog
+	dog.Level = logger.Trace
 }
 
 func main() {
@@ -82,17 +82,17 @@ func main() {
 
 			switch c[0] {
 			case 't':
-				dog.Level = log.Trace
+				dog.Level = logger.Trace
 			case 'd':
-				dog.Level = log.Debug
+				dog.Level = logger.Debug
 			case 'i':
-				dog.Level = log.Info
+				dog.Level = logger.Info
 			case 'w':
-				dog.Level = log.Warn
+				dog.Level = logger.Warn
 			case 'e':
-				dog.Level = log.Error
+				dog.Level = logger.Error
 			case 'f':
-				dog.Level = log.Fatal
+				dog.Level = logger.Fatal
 			case 's':
 				dog.Info(cop.SOCK_STAT_DESC[sock.Status])
 			case 'h':

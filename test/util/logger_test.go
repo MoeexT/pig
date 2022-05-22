@@ -3,12 +3,12 @@ package util_test
 import (
 	"testing"
 
-	"pig/util/log"
+	"pig/util/logger"
 )
 
 func TestLogger(t *testing.T) {
-	logger := log.Logger{
-		Level: log.Info,
+	logger := logger.Logger{
+		Level: logger.Info,
 	}
 	logger.Trace("trace", 1, []byte{0})
 	logger.Debug("debug", 2, []byte{0, 1})

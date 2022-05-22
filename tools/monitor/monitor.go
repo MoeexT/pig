@@ -8,7 +8,7 @@ import (
 	"pig/lib/cop"
 	"pig/lib/mip"
 	"pig/util"
-	"pig/util/log"
+	"pig/util/logger"
 
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
@@ -22,7 +22,7 @@ var (
 	a        bool   // all packets
 	v        bool   // verbose
 	protocol string // which protocol
-	dog      *log.Logger
+	dog      *logger.Logger
 )
 
 func init() {
@@ -33,7 +33,7 @@ func init() {
 	flag.BoolVar(&a, "a", false, "all packets")
 	flag.BoolVar(&v, "v", false, "verbose mode: show headers")
 	flag.StringVar(&protocol, "p", "ip", "protocol: tcp/icmp")
-	dog = log.Dog
+	dog = logger.Dog
 }
 
 func main() {

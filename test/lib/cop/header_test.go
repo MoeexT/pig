@@ -2,9 +2,10 @@ package cop_test
 
 import (
 	"net"
+	"testing"
+
 	"pig/lib/cop"
 	"pig/util"
-	"testing"
 
 	"golang.org/x/net/ipv4"
 )

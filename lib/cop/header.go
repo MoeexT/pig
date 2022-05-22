@@ -32,7 +32,7 @@ func (h *Header) String() string {
 	if h == nil {
 		return "nil"
 	}
-	return fmt.Sprintf("src: %d, dst: %d, seq: %d, ack: %d, offset: %d, flags: %09b, win-size: %d, check-sum: %04x, urgent: %d, options: %v",
+	return fmt.Sprintf("COP.Header{src: %d, dst: %d, seq: %d, ack: %d, offset: %d, flags: %09b, win-size: %d, check-sum: %04x, urgent: %d, options: %v}",
 		h.SrcPort, h.DstPort, h.Seq, h.Ack, h.Offset, h.Flags, h.WinSize, h.Checksum, h.UrgPtr, h.Options)
 }
 

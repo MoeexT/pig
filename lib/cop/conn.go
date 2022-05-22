@@ -8,7 +8,7 @@ import (
 
 	"pig/lib/mip"
 	"pig/util"
-	"pig/util/log"
+	"pig/util/logger"
 
 	"golang.org/x/net/ipv4"
 )
@@ -43,12 +43,12 @@ const (
 var (
 	// syn channels
 	// synchs map[SocketId]chan error
-	logger         *log.Logger
+	dogger         *logger.Logger
 	SOCK_STAT_DESC map[uint8]string
 )
 
 func init() {
-	logger = log.Dog
+	dogger = logger.Dog
 
 	SOCK_STAT_DESC = map[uint8]string{
 		SYN_SENT:    "SYN_SENT",
@@ -115,7 +115,7 @@ func (sock *Socket) newHeader(flag uint16) *Header {
 
 func (sock *Socket) Send(content []byte) (err error) {
 	if sock.Status > LAST_ACK {
-		logger.Error("Socket %v is not established", sock)
+		dogger.Error("Socket %v is not established", sock)
 		return fmt.Errorf("socket is not ESTABLISHED")
 	}
 	copHeader := Header{
@@ -136,8 +136,8 @@ func (sock *Socket) Send(content []byte) (err error) {
 
 	// validation
 	phdr, _ := ipv4.ParseHeader(ipPayload)
-	logger.Tracef("ip header: %v", phdr)
-	logger.Tracef("ip send(%d): %v", len(ipPayload), util.BytesString(ipPayload, len(ipPayload)))
+	dogger.Tracef("ip header: %v", phdr)
+	dogger.Tracef("ip send(%d): %v", len(ipPayload), util.BytesString(ipPayload, len(ipPayload)))
 	return
 }
 
@@ -147,13 +147,13 @@ func (sock *Socket) BeginReceive(ch chan []byte) (err error) {
 	}
 	conn, err := net.ListenIP("ip4:tcp", addr)
 	if err != nil {
-		logger.Errorf("ListenIP error: %v", err)
+		dogger.Errorf("ListenIP error: %v", err)
 		return
 	}
 
 	ipConn, err := ipv4.NewRawConn(conn)
 	if err != nil {
-		logger.Errorf("NewRawConn error: %v", err)
+		dogger.Errorf("NewRawConn error: %v", err)
 		return
 	}
 
@@ -161,7 +161,7 @@ func (sock *Socket) BeginReceive(ch chan []byte) (err error) {
 		buf := make([]byte, 1500)
 		ipHeader, payload, _, err := ipConn.ReadFrom(buf)
 		if err != nil {
-			logger.Errorf("Read IP packet error: %v", err)
+			dogger.Errorf("Read IP packet error: %v", err)
 			ch <- nil
 		}
 
@@ -170,10 +170,10 @@ func (sock *Socket) BeginReceive(ch chan []byte) (err error) {
 			dog.Error(err)
 			continue
 		}
-		
+
 		// filter dst port
 		if copHeader.DstPort != sock.SrcPort {
-			// logger.Tracef("dst port[%d] not match: %d", sock.SrcPort, copHeader.DstPort)
+			// dogger.Tracef("dst port[%d] not match: %d", sock.SrcPort, copHeader.DstPort)
 			continue
 		}
 
@@ -184,25 +184,25 @@ func (sock *Socket) BeginReceive(ch chan []byte) (err error) {
 			switch copHeader.Flags & 0b10011 {
 			// first handshake
 			case SYN1_FLAGS:
-				logger.Debug("receive SYN")
+				dogger.Debug("receive SYN")
 				go sock.replySyn1()
 			// second handshake
 			case SYN2_FLAGS:
-				logger.Debug("receive SYN-ACK")
+				dogger.Debug("receive SYN-ACK")
 				go sock.replySyn2()
 			// third handshake, second handwave, third handwave
 			case ACK_FLAGS:
-				logger.Debug("receive ACK")
+				dogger.Debug("receive ACK")
 				go sock.replyAck()
 			// fin
 			case FIN_FLAGS:
-				logger.Debug("receive FIN")
+				dogger.Debug("receive FIN")
 				go sock.replyFin()
 			}
 		} else {
 			// data packet
-			logger.Trace("IP Header", ipHeader)
-			logger.Trace("cop Header", copHeader)
+			dogger.Trace("IP Header", ipHeader)
+			dogger.Trace("cop Header", copHeader)
 			ch <- data
 			sock.acknowledge()
 		}
@@ -211,7 +211,7 @@ func (sock *Socket) BeginReceive(ch chan []byte) (err error) {
 
 // first handshake, send SYN
 func (sock *Socket) synchronize() (err error) {
-	logger.Debug("Send SYN")
+	dogger.Debug("Send SYN")
 
 	// check if the connection is established or establishing
 	// or, check the status
@@ -242,11 +242,11 @@ func (sock *Socket) replySyn1() (err error) {
 	// 	return fmt.Errorf("Socket %v already exists", sock)
 	// }
 	if sock.Status != CLOSED {
-		logger.Error("Socket %v already exists", sock)
+		dogger.Error("Socket %v already exists", sock)
 		return fmt.Errorf("Socket %v already exists", sock)
 	}
 
-	logger.Debug("Reply SYN1")
+	dogger.Debug("Reply SYN1")
 	// set status
 	sock.Status = SYN_RCVD
 	// hmap[sock.sid] = sock
@@ -258,7 +258,7 @@ func (sock *Socket) replySyn2() (err error) {
 	sock.Status = ESTABLISHED
 	// fmap[sock.sid] = hmap[sock.sid]
 	// delete(hmap, sock.sid)
-	logger.Info("Established")
+	dogger.Info("Established")
 	return sock.sendControl(ACK_FLAGS)
 }
 
@@ -266,14 +266,14 @@ func (sock *Socket) replyAck() {
 	switch sock.Status {
 	case SYN_RCVD:
 		// 3rd handshake
-		logger.Info("Established")
+		dogger.Info("Established")
 		sock.Status = ESTABLISHED
 	case FIN_WAIT_1:
-		logger.Debug("Reply ACK FIN_WAIT_1")
+		dogger.Debug("Reply ACK FIN_WAIT_1")
 		// 2nd handwave
 		sock.Status = FIN_WAIT_2
 	case LAST_ACK:
-		logger.Info("Closed")
+		dogger.Info("Closed")
 		// 4th handwave
 		sock.Status = CLOSED
 	}
@@ -281,16 +281,16 @@ func (sock *Socket) replyAck() {
 
 // send ACK
 func (sock *Socket) acknowledge() (err error) {
-	logger.Debug("Send ACK")
+	dogger.Debug("Send ACK")
 	return sock.sendControl(ACK_FLAGS)
 }
 
 func (sock *Socket) replyFin() (err error) {
-	logger.Debug("Reply FIN")
+	dogger.Debug("Reply FIN")
 
 	switch sock.Status {
 	case ESTABLISHED:
-		logger.Debug("ESTABLISHED to close_wait")
+		dogger.Debug("ESTABLISHED to close_wait")
 		// 1st handwave
 		sock.Status = CLOSE_WAIT
 		// 2nd handwave
@@ -301,7 +301,7 @@ func (sock *Socket) replyFin() (err error) {
 		sock.Status = LAST_ACK
 		sock.sendControl(FIN_FLAGS)
 	case FIN_WAIT_2:
-		logger.Debug("fin_wait_2 to time_wait")
+		dogger.Debug("fin_wait_2 to time_wait")
 		sock.Status = TIME_WAIT
 		// 4th handwave
 		sock.sendControl(ACK_FLAGS)
@@ -327,7 +327,7 @@ func (sock *Socket) replyFin() (err error) {
 
 // finish connection
 func (sock *Socket) finish() (err error) {
-	logger.Info("Finish")
+	dogger.Info("Finish")
 
 	if sock.Status != ESTABLISHED {
 		return fmt.Errorf("Socket %v has disconnected", sock)
@@ -355,7 +355,7 @@ func (sock *Socket) sendControl(flags uint16) error {
 func (sock *Socket) timeWait() {
 	time.Sleep(time.Second * TIME_WAIT_TIME)
 	// delete(cmap, sock.sid)
-	logger.Info("Closed")
+	dogger.Info("Closed")
 	sock.Status = CLOSED
 	mip.Close()
 }

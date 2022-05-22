@@ -1,4 +1,4 @@
-package log
+package logger
 
 import (
 	"fmt"
@@ -108,9 +108,9 @@ func (logger *Logger) log(level int, args ...interface{}) {
 
 	// trim last space
 	rs := sb.String()
-	if sb.Len() > 0 {
-		rs = rs[:len(rs)-1]
-	}
+	// if sb.Len() > 0 {
+	// 	rs = rs[:len(rs)-1]
+	// }
 
 	// add color
 	cs := dye(rs, level)
