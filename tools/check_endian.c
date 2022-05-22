@@ -16,7 +16,7 @@ int main() {
     }
     printf("%s -%s-%s:\n", uts.machine, uts.sysname, uts.release);
     if (sizeof(short) != 2) {
-        printf("sizeof short =%d\n", sizeof(short));
+        printf("sizeof short =%ld\n", sizeof(short));
         return 0;
     }
     if (un.c[0] == 1 && un.c[1] == 2)

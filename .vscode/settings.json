@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "ethernet.h": "c",
+        "stdio.h": "c"
+    },
+    "cSpell.words": [
+        "Debugf",
+        "Infof",
+        "Tracef",
+        "Warnf"
+    ]
+}

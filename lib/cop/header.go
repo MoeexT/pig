@@ -92,10 +92,9 @@ func (h *Header) Marshal(content []byte) (bytes []byte) {
 }
 
 // parse bytes-header to cop header
-func ParseHeader(bytes []byte) (header *Header, data []byte) {
+func ParseHeader(bytes []byte) (header *Header, err error) {
 	if bytes == nil || len(bytes) < 20 {
-		fmt.Println(bytes)
-		return nil, nil
+		return nil, fmt.Errorf("invalid header bytes")
 	}
 
 	header = new(Header)
@@ -118,9 +117,6 @@ func ParseHeader(bytes []byte) (header *Header, data []byte) {
 	// tcp header options, if has
 	if header.Offset > 20 {
 		header.Options = bytes[20:header.Offset]
-	}
-	if len(bytes) > int(header.Offset) {
-		data = bytes[header.Offset:]
 	}
 
 	return

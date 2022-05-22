@@ -2,8 +2,9 @@ package mip
 
 import (
 	"errors"
-	"pig/util/log"
 	"net"
+	"pig/lib/eth"
+	"pig/util/log"
 	"strconv"
 	"strings"
 	"syscall"
@@ -18,7 +19,7 @@ var (
 	fd        int
 	addr      *syscall.SockaddrInet4
 	addrCache map[uint64]*syscall.SockaddrInet4
-	dog *log.Logger
+	dog       *log.Logger
 )
 
 func init() {
@@ -76,4 +77,56 @@ func SendTo(ip net.IP, port uint16, content []byte) error {
 	}
 	dog.Tracef("send to %v:%v, content: %v", ip, port, content)
 	return syscall.Sendto(fd, content, 0, addr)
+}
+
+func htons(i uint16) uint16 {
+	return (i&0xff)<<8 | i>>8
+}
+
+// receive all ipv4 packets from the network then yield data
+func BeginReceive() (ch chan []byte, err error) {
+	fdr, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+	dog.Trace("created socket with fd:", fdr)
+	if err != nil {
+		return nil, err
+	}
+
+	ch = make(chan []byte, 256)
+
+	ifi, err := net.InterfaceByName("eth0")
+	dog.Info("interface:", ifi)
+
+	go func() {
+		for {
+			buf := make([]byte, 1518)
+			n, _, err := syscall.Recvfrom(fdr, buf, 0)
+			if err != nil || n < 14 {
+				dog.Errorf("read %d bytes from ethernet with error: %v", n, err)
+				continue
+			}
+
+			// if llsa, ok := addr.(*syscall.SockaddrLinklayer); ok {
+			// 	inter, err := net.InterfaceByIndex(llsa.Ifindex)
+			// 	if err != nil {
+			// 		dog.Error(os.Stderr, "interface from ifindex: %s", err.Error())
+			// 	}
+			// 	dog.Info(inter.Name + ": ")
+			// }
+
+			eHeader := eth.ParseHeader(buf[:14])
+
+			if eHeader.EtherType != eth.IPv4 {
+				dog.Warn("not ipv4 packet: " + eHeader.String())
+				ch <- buf[14:n]
+			} else {
+				ch <- buf[14:n]
+			}
+		}
+	}()
+
+	return ch, nil
+}
+
+func Close() {
+	syscall.Close(fd)
 }
