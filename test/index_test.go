@@ -33,7 +33,6 @@ func TestJust(t *testing.T) {
 	assert.Equal(t, byte(0x00), byte(y>>60))
 }
 
-
 func TestCaller(t *testing.T) {
 	pc, _, _, ok := runtime.Caller(0)
 	fmt.Println(ok, runtime.FuncForPC(pc).Name())
@@ -47,5 +46,29 @@ func TestCaller(t *testing.T) {
 	fmt.Println(ok, runtime.FuncForPC(pc).Name())
 	pc, _, _, ok = runtime.Caller(5)
 	fmt.Println(ok, runtime.FuncForPC(pc).Name())
-	
+
+}
+
+func TestIota(t *testing.T) {
+	const (
+		SYN_SENT = 1 << iota
+		SYN_RCVD
+		ESTABLISHED
+		FIN_WAIT_1
+		FIN_WAIT_2
+		CLOSE_WAIT
+		LAST_ACK
+		TIME_WAIT
+		CLOSED = 0
+	)
+
+	fmt.Println("CLOSED: ", CLOSED)
+	fmt.Println("SYN_SENT: ", SYN_SENT)
+	fmt.Println("SYN_RCVD: ", SYN_RCVD)
+	fmt.Println("ESTABLISHED: ", ESTABLISHED)
+	fmt.Println("FIN_WAIT_1: ", FIN_WAIT_1)
+	fmt.Println("FIN_WAIT_2: ", FIN_WAIT_2)
+	fmt.Println("CLOSE_WAIT: ", CLOSE_WAIT)
+	fmt.Println("LAST_ACK: ", LAST_ACK)
+	fmt.Println("TIME_WAIT: ", TIME_WAIT)
 }

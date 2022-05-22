@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	SYN_SENT = iota
+	// socket status
+	SYN_SENT = 1 << iota
 	SYN_RCVD
 	ESTABLISHED
 	FIN_WAIT_1
@@ -22,11 +23,12 @@ const (
 	CLOSE_WAIT
 	LAST_ACK
 	TIME_WAIT
-	CLOSED
+	CLOSED = 0
 
-	// 1 sec
+	// time wait span: 1 sec
 	TIME_WAIT_TIME = 1
 
+	// tcp flags
 	SYN1_FLAGS = 0b00010
 	SYN2_FLAGS = 0b10010
 	// SYN3_FLAGS = 0b10000 == ACK
@@ -39,23 +41,15 @@ const (
 )
 
 var (
-	// half-connection syn map
-	// hmap map[SocketId]*Socket
-	// full-connection syn map
-	// fmap map[SocketId]*Socket
-	// closing-connection fin map
-	// cmap map[SocketId]*Socket
 	// syn channels
 	// synchs map[SocketId]chan error
-	logger    *log.Logger
+	logger         *log.Logger
 	SOCK_STAT_DESC map[uint8]string
 )
 
 func init() {
-	// hmap = make(map[SocketId]*Socket)
-	// fmap = make(map[SocketId]*Socket)
-	// cmap = make(map[SocketId]*Socket)
 	logger = log.Dog
+
 	SOCK_STAT_DESC = map[uint8]string{
 		SYN_SENT:    "SYN_SENT",
 		SYN_RCVD:    "SYN_RCVD",
@@ -71,12 +65,11 @@ func init() {
 
 type SocketId [12]byte
 type Socket struct {
-	// socket id
-	sid SocketId
-	// sequence number
-	seq uint32
-	// connection status
-	Status  uint8
+	sid SocketId // socket id
+	seq uint32   // sequence number
+	nxt *Socket  // next socket, used for linked-list-management
+
+	Status  uint8 // connection status
 	SrcIP   []byte
 	DstIP   []byte
 	SrcPort uint16
@@ -171,13 +164,20 @@ func (sock *Socket) BeginReceive(ch chan []byte) (err error) {
 			logger.Errorf("Read IP packet error: %v", err)
 			ch <- nil
 		}
-		copHeader, data := ParseHeader(payload)
+
+		copHeader, err := ParseHeader(payload)
+		if err != nil {
+			dog.Error(err)
+			continue
+		}
+		
 		// filter dst port
 		if copHeader.DstPort != sock.SrcPort {
 			// logger.Tracef("dst port[%d] not match: %d", sock.SrcPort, copHeader.DstPort)
 			continue
 		}
 
+		data := payload[copHeader.Offset:]
 		// data is nil, as if this control packet
 		if len(data) == 0 {
 			// ack, syn, fin
@@ -215,9 +215,9 @@ func (sock *Socket) synchronize() (err error) {
 
 	// check if the connection is established or establishing
 	// or, check the status
-	// if hmap[sock.sid] != nil || fmap[sock.sid] != nil || cmap[sock.sid] != nil {
-	// 	return fmt.Errorf("Socket %v already exists", sock)
-	// }
+	if hmap[sock.sid] != nil || fmap[sock.sid] != nil || cmap[sock.sid] != nil {
+		return fmt.Errorf("Socket %v already exists", sock)
+	}
 	if sock.Status != CLOSED {
 		return fmt.Errorf("Socket %v already exists", sock)
 	}
@@ -228,7 +228,7 @@ func (sock *Socket) synchronize() (err error) {
 	sock.Status = SYN_SENT
 
 	// add socket to half-connection map
-	// hmap[sock.sid] = sock
+	hmap[sock.sid] = sock
 
 	return
 }
@@ -357,6 +357,7 @@ func (sock *Socket) timeWait() {
 	// delete(cmap, sock.sid)
 	logger.Info("Closed")
 	sock.Status = CLOSED
+	mip.Close()
 }
 
 // generate socket id

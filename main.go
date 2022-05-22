@@ -2,7 +2,10 @@ package main
 
 import (
 	"bufio"
+	"flag"
+	"net"
 	"os"
+
 	"pig/lib/cop"
 	"pig/util/log"
 )
@@ -15,7 +18,7 @@ https://toutiao.io/posts/wj9ori/preview
 
 const (
 	EmptyString = ""
-	HELP_INFO = `custom optimization protocol
+	HELP_INFO   = `custom optimization protocol
 	:conn to connect.
 	:disc to disconnect.
 	:help to show help.
@@ -25,11 +28,31 @@ const (
 )
 
 var (
-	input string
-	dog   *log.Logger
+	si       string // src ip
+	di       string // dst ip
+	sp       uint   // src port
+	dp       uint   // dst port
+	a        bool   // all packets
+	v        bool   // verbose
+	protocol string // which protocol
+	input    string
+	dog      *log.Logger
 )
 
+func init() {
+	flag.StringVar(&di, "di", "127.0.0.1", "dst ip")
+	flag.StringVar(&si, "si", "127.0.0.1", "src ip")
+	flag.UintVar(&sp, "sp", 626, "src port")
+	flag.UintVar(&dp, "dp", 627, "dst port")
+	flag.BoolVar(&a, "a", false, "all packets")
+	flag.BoolVar(&v, "v", false, "verbose mode: show headers")
+	flag.StringVar(&protocol, "p", "tcp", "protocol: tcp/icmp")
+	dog = log.Dog
+}
+
 func main() {
+	flag.Parse()
+	flag.PrintDefaults()
 	dog = log.Dog
 	dog.Level = log.Info
 	dog.Info(HELP_INFO)
@@ -39,8 +62,7 @@ func main() {
 	chRcv := make(chan []byte, 128)
 
 	// sender
-	sock := cop.NewSocket([]byte{127, 0, 0, 1}, []byte{127, 0, 0, 1}, 626, 627)
-
+	sock := cop.NewSocket(net.ParseIP(si), net.ParseIP(di), uint16(sp), uint16(dp))
 
 	// receive message
 	go sock.BeginReceive(chRcv)
