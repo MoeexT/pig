@@ -86,7 +86,7 @@ func htons(i uint16) uint16 {
 
 // receive all ipv4 packets from the network then yield data
 func BeginReceive() (ch chan []byte, err error) {
-	fdr, err := syscall.Socket(syscall.AF_ROUTE, syscall.SOCK_RAW, int(htons(syscall.IFT_ETHER)))
+	fdr, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_IP)))
 	dog.Trace("created socket with fd:", fdr)
 	if err != nil {
 		return nil, err
