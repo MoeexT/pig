@@ -36,4 +36,5 @@ func main() {
 	logger.Info(header)
 	logger.Warn(header)
 	logger.Error(header)
+	logger.Fatal(header)
 }
